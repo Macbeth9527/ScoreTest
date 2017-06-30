@@ -42,6 +42,8 @@ public class LoginActivity extends AppCompatActivity {
 
     private String loginUrl = "http://218.94.104.201:84/default2.aspx";
 
+
+
     private Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
@@ -67,6 +69,8 @@ public class LoginActivity extends AppCompatActivity {
 
 
         initView();
+
+
 
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -131,7 +135,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onResponse(Call call, Response response) throws IOException {
 
                 String urlString = response.request().url().toString();
-                final String wtf = response.body().string();
+                final String body = response.body().string();
 
                 if (urlString.equals(loginUrl)){
 
@@ -145,7 +149,7 @@ public class LoginActivity extends AppCompatActivity {
                     intent.putExtra("urlString", urlString);
                     intent.putExtra("cookie", Cookie);
                     intent.putExtra("stuId", stuID);
-                    intent.putExtra("stuName", URLEncoder.encode(JoupUtil.getStuName(wtf), "GB2312"));
+                    intent.putExtra("stuName", JoupUtil.getStuName(body));
 
                     message.what = Login_Success;
                     handler.sendMessage(message);
@@ -167,6 +171,12 @@ public class LoginActivity extends AppCompatActivity {
         passwordEdit = (EditText)findViewById(R.id.input_password);
 
         loginButton = (Button)findViewById(R.id.btn_login);
+
+        android.support.v7.widget.Toolbar toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.login_toolbar);
+
+        setSupportActionBar(toolbar);
+
+
     }
 
 

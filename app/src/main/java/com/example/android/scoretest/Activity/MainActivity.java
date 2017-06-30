@@ -1,11 +1,19 @@
 package com.example.android.scoretest.Activity;
 
 import android.content.Intent;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.android.scoretest.R;
 import com.example.android.scoretest.model.Course;
@@ -17,27 +25,30 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
     private String loginScoreUrl;
 
-    private Button getAllScore;
-
     private String Cookie;
 
     private String UrlString;
 
     private String VIEWSTATE;
+
+    private DrawerLayout mDrawerLayout;
+
+    private NavigationView navView;
+
+    private TextView stuIDText;
+
+    private TextView stuNameText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,10 +57,22 @@ public class MainActivity extends AppCompatActivity {
 
         initViews();
 
+        String stuId = getIntent().getStringExtra("stuId");
+        String stuName = getIntent().getStringExtra("stuName");
+
+        stuIDText.setText(stuId);
+        stuNameText.setText(stuName);
+
+
         Cookie = getIntent().getStringExtra("cookie");
         UrlString = getIntent().getStringExtra("urlString");
-        loginScoreUrl = "http://218.94.104.201:84/xscj.aspx?xh=" + getIntent().getStringExtra("stuId")
-                + "&xm=" + getIntent().getStringExtra("stuName") + "&gnmkdm=N121605";
+        try {
+            loginScoreUrl = "http://218.94.104.201:84/xscj.aspx?xh=" + stuId
+                    + "&xm=" + URLEncoder.encode(stuName, "GB2312") + "&gnmkdm=N121605";
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
 
         loginScore(UrlString);
 
@@ -74,18 +97,35 @@ public class MainActivity extends AppCompatActivity {
                     VIEWSTATE = JoupUtil.getVIEWSTATE(htmlBody);
 
 
-                    getAllScore.setOnClickListener(new View.OnClickListener() {
+                    navView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
                         @Override
-                        public void onClick(View v) {
-
-                            try {
-                                searchAllScore();
-                            } catch (UnsupportedEncodingException e) {
-                                e.printStackTrace();
+                        public boolean onNavigationItemSelected(MenuItem item) {
+                            switch (item.getItemId()){
+                                case R.id.nav_score_all :
+                                    mDrawerLayout.closeDrawers();
+                                    try {
+                                        searchAllScore();
+                                    } catch (UnsupportedEncodingException e) {
+                                        e.printStackTrace();
+                                    }
+                                    break;
+                                case R.id.nav_GPT_get :
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(MainActivity.this,"暂未开放",Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                                    break;
+                                default:
+                                    break;
                             }
 
+                            return true;
                         }
                     });
+
+
                 }
             }
         });
@@ -129,10 +169,52 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void initViews(){
-        getAllScore = (Button) findViewById(R.id.search_score_all);
+
+        android.support.v7.widget.Toolbar toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.main_toolbar);
+
+        setSupportActionBar(toolbar);
+
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.main_drawer_layout);
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null){
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeAsUpIndicator(R.drawable.ic_done);
+        }
+
+        navView = (NavigationView)findViewById(R.id.nav_view);
+
+        View headerLayout = navView.inflateHeaderView(R.layout.main_header);
+
+        stuIDText = (TextView)headerLayout.findViewById(R.id.main_stuID);
+
+        stuNameText = (TextView)headerLayout.findViewById(R.id.main_stuName);
+
+
+
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.toolbar,menu);
+        return true;
+    }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.settings :
+                Toast.makeText(MainActivity.this,"wtf",Toast.LENGTH_SHORT).show();
+                break;
 
+            case android.R.id.home :
+                mDrawerLayout.openDrawer(GravityCompat.START);
+                break;
 
+            default:
+                break;
+        }
+
+        return true;
+    }
 }
