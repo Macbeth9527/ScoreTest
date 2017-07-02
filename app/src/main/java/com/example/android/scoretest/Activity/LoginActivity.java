@@ -155,6 +155,7 @@ public class LoginActivity extends AppCompatActivity {
                     handler.sendMessage(message);
 
                     startActivity(intent);
+                    finish();
 
                 }
 

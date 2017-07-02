@@ -1,6 +1,7 @@
 package com.example.android.scoretest.Activity;
 
 import android.content.Intent;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -11,6 +12,8 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -50,6 +53,11 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView stuNameText;
 
+    private WebView webView;
+
+    private long exitTime = 0;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,14 +81,12 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-
         loginScore(UrlString);
-
 
 
     }
 
-    private void loginScore(String urlString){
+    private void loginScore(String urlString) {
 
         OkHttpUtil.sendRequestGet(loginScoreUrl, Cookie, urlString, new Callback() {
             @Override
@@ -91,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
 
-                if (response.isSuccessful()){
+                if (response.isSuccessful()) {
 
                     final String htmlBody = response.body().string();
                     VIEWSTATE = JoupUtil.getVIEWSTATE(htmlBody);
@@ -100,8 +106,8 @@ public class MainActivity extends AppCompatActivity {
                     navView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
                         @Override
                         public boolean onNavigationItemSelected(MenuItem item) {
-                            switch (item.getItemId()){
-                                case R.id.nav_score_all :
+                            switch (item.getItemId()) {
+                                case R.id.nav_score_all:
                                     mDrawerLayout.closeDrawers();
                                     try {
                                         searchAllScore();
@@ -109,11 +115,11 @@ public class MainActivity extends AppCompatActivity {
                                         e.printStackTrace();
                                     }
                                     break;
-                                case R.id.nav_GPT_get :
+                                case R.id.nav_GPT_get:
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            Toast.makeText(MainActivity.this,"暂未开放",Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(MainActivity.this, "u clicked the gpt button, but nothing happened", Toast.LENGTH_SHORT).show();
                                         }
                                     });
                                     break;
@@ -133,10 +139,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-
-
-
     private void searchAllScore() throws UnsupportedEncodingException {
 
 
@@ -149,17 +151,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
 
-                if (response.isSuccessful()){
+                if (response.isSuccessful()) {
                     BufferedReader br = new BufferedReader(new InputStreamReader(response.body().byteStream(), "gb2312"));
-                    StringBuilder sb=new StringBuilder();
+                    StringBuilder sb = new StringBuilder();
                     String line;
                     while ((line = br.readLine()) != null) {
                         sb.append(line);
                     }
 
                     List<Course> courseList = JoupUtil.parseHtml(sb.toString());
-                    Intent intent = new Intent(MainActivity.this,CourseActivity.class);
-                    intent.putExtra("list",(Serializable) (courseList));
+                    Intent intent = new Intent(MainActivity.this, CourseActivity.class);
+                    intent.putExtra("list", (Serializable) (courseList));
                     startActivity(intent);
                 }
             }
@@ -168,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void initViews(){
+    private void initViews() {
 
         android.support.v7.widget.Toolbar toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.main_toolbar);
 
@@ -176,38 +178,45 @@ public class MainActivity extends AppCompatActivity {
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.main_drawer_layout);
 
+
         ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null){
+        if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.drawable.ic_done);
         }
 
-        navView = (NavigationView)findViewById(R.id.nav_view);
+
+        navView = (NavigationView) findViewById(R.id.nav_view);
 
         View headerLayout = navView.inflateHeaderView(R.layout.main_header);
 
-        stuIDText = (TextView)headerLayout.findViewById(R.id.main_stuID);
+        stuIDText = (TextView) headerLayout.findViewById(R.id.main_stuID);
 
-        stuNameText = (TextView)headerLayout.findViewById(R.id.main_stuName);
+        stuNameText = (TextView) headerLayout.findViewById(R.id.main_stuName);
 
+        webView = (WebView) findViewById(R.id.web_view_index_sanjiang);
+        webView.setWebViewClient(new WebViewClient());
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.loadUrl("http://www.sju.js.cn/");
 
 
     }
 
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.toolbar,menu);
+        getMenuInflater().inflate(R.menu.toolbar, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
-            case R.id.settings :
-                Toast.makeText(MainActivity.this,"wtf",Toast.LENGTH_SHORT).show();
+        switch (item.getItemId()) {
+            case R.id.settings:
+                Toast.makeText(MainActivity.this, "u clicked the settings button, but nothing happened", Toast.LENGTH_SHORT).show();
                 break;
 
-            case android.R.id.home :
+            case android.R.id.home:
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 break;
 
@@ -216,5 +225,21 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return true;
+    }
+
+
+    public void onBackPressed() {
+        if (webView.canGoBack()) {
+            webView.goBack();
+        } else {
+            if ((System.currentTimeMillis() - exitTime) > 2000) {
+                Toast.makeText(getApplicationContext(), "再按一次退出程序",
+                        Toast.LENGTH_SHORT).show();
+                exitTime = System.currentTimeMillis();
+            } else {
+                super.onBackPressed();
+            }
+
+        }
     }
 }
