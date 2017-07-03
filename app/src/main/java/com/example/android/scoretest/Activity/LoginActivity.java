@@ -23,8 +23,9 @@ import okhttp3.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
-    public static final int Login_Failed = 0;
-    public static final int Login_Success = 1;
+    private static final int Login_Failed = 0;
+    private static final int Login_Success = 1;
+    private static final int Login_Failed_SysBusy =2;
 
     private EditText accountEdit;
 
@@ -54,6 +55,10 @@ public class LoginActivity extends AppCompatActivity {
                 case Login_Success :
                     Toast.makeText(LoginActivity.this,"登陆成功",Toast.LENGTH_SHORT).show();
                     break;
+                case Login_Failed_SysBusy :
+                    Toast.makeText(LoginActivity.this,"登陆失败，系统正忙",Toast.LENGTH_SHORT).show();
+                    break;
+
                 default:
                     break;
             }
@@ -143,7 +148,11 @@ public class LoginActivity extends AppCompatActivity {
 
                     handler.sendMessage(message);
 
-                }else{
+                }else if(urlString.equals("http://218.94.104.201:84/zdy.htm?aspxerrorpath=/default2.aspx")){
+                    message.what = Login_Failed_SysBusy;
+                    handler.sendMessage(message);
+                }
+                else{
 
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                     intent.putExtra("urlString", urlString);
