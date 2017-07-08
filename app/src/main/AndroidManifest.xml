@@ -10,22 +10,24 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="My First App"
+        android:label=""
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
             android:name=".Activity.LoginActivity"
-            android:label="login">>
+            android:theme="@style/NavigationTransparent"
+            >>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Activity.CourseActivity" />
+        <activity android:name=".Activity.CourseActivity"
+            android:theme="@style/NavigationTransparent"/>
         <activity
             android:name=".Activity.MainActivity"
-            android:label="main" />
+           android:theme="@style/MainTheme" />
     </application>
 
 </manifest>

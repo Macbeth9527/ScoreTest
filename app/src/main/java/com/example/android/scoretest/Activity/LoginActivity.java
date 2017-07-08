@@ -1,11 +1,15 @@
 package com.example.android.scoretest.Activity;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -13,9 +17,10 @@ import android.widget.Toast;
 import com.example.android.scoretest.R;
 import com.example.android.scoretest.utils.JoupUtil;
 import com.example.android.scoretest.utils.OkHttpUtil;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -25,7 +30,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private static final int Login_Failed = 0;
     private static final int Login_Success = 1;
-    private static final int Login_Failed_SysBusy =2;
+    private static final int Login_Failed_SysBusy = 2;
 
     private EditText accountEdit;
 
@@ -44,19 +49,18 @@ public class LoginActivity extends AppCompatActivity {
     private String loginUrl = "http://218.94.104.201:84/default2.aspx";
 
 
-
-    private Handler handler = new Handler(){
+    private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            switch (msg.what){
-                case Login_Failed :
-                    Toast.makeText(LoginActivity.this,"登陆失败",Toast.LENGTH_SHORT).show();
+            switch (msg.what) {
+                case Login_Failed:
+                    Toast.makeText(LoginActivity.this, "登陆失败", Toast.LENGTH_SHORT).show();
                     break;
-                case Login_Success :
-                    Toast.makeText(LoginActivity.this,"登陆成功",Toast.LENGTH_SHORT).show();
+                case Login_Success:
+                    Toast.makeText(LoginActivity.this, "登陆成功", Toast.LENGTH_SHORT).show();
                     break;
-                case Login_Failed_SysBusy :
-                    Toast.makeText(LoginActivity.this,"登陆失败，系统正忙",Toast.LENGTH_SHORT).show();
+                case Login_Failed_SysBusy:
+                    Toast.makeText(LoginActivity.this, "登陆失败，系统正忙", Toast.LENGTH_SHORT).show();
                     break;
 
                 default:
@@ -64,7 +68,6 @@ public class LoginActivity extends AppCompatActivity {
             }
         }
     };
-
 
 
     @Override
@@ -76,18 +79,15 @@ public class LoginActivity extends AppCompatActivity {
         initView();
 
 
-
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 stuID = accountEdit.getText().toString();
                 if (stuID.isEmpty()) {
                     accountEdit.setError("学号不能为空");
-                }else if (stuID.length() != 11){
+                } else if (stuID.length() != 11) {
                     accountEdit.setError("学号不为11位");
                 }
-
-
                 password = passwordEdit.getText().toString();
                 if (password.isEmpty()) {
                     passwordEdit.setError("密码不能为空");
@@ -98,10 +98,17 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setStatusBarColor(Color.TRANSPARENT);
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+        }
+
+
+
     }
 
 
-    private void getFuck(){
+    private void getFuck() {
 
         OkHttpUtil.sendRequestGet(loginUrl, new Callback() {
             @Override
@@ -130,7 +137,7 @@ public class LoginActivity extends AppCompatActivity {
         final Message message = new Message();
 
         //发送post请求
-        OkHttpUtil.sendRequestPost(loginUrl,VIEWSTATE,stuID,password,Cookie, new Callback() {
+        OkHttpUtil.sendRequestPost(loginUrl, VIEWSTATE, stuID, password, Cookie, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
 
@@ -142,17 +149,16 @@ public class LoginActivity extends AppCompatActivity {
                 String urlString = response.request().url().toString();
                 final String body = response.body().string();
 
-                if (urlString.equals(loginUrl)){
+                if (urlString.equals(loginUrl)) {
 
                     message.what = Login_Failed;
 
                     handler.sendMessage(message);
 
-                }else if(urlString.equals("http://218.94.104.201:84/zdy.htm?aspxerrorpath=/default2.aspx")){
+                } else if (urlString.equals("http://218.94.104.201:84/zdy.htm?aspxerrorpath=/default2.aspx")) {
                     message.what = Login_Failed_SysBusy;
                     handler.sendMessage(message);
-                }
-                else{
+                } else {
 
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                     intent.putExtra("urlString", urlString);
@@ -174,24 +180,18 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    private void initView(){
+    private void initView() {
 
-        accountEdit = (EditText)findViewById(R.id.input_account);
+        accountEdit = (EditText) findViewById(R.id.input_account);
 
-        passwordEdit = (EditText)findViewById(R.id.input_password);
+        passwordEdit = (EditText) findViewById(R.id.input_password);
 
-        loginButton = (Button)findViewById(R.id.btn_login);
+        loginButton = (Button) findViewById(R.id.btn_login);
 
-        android.support.v7.widget.Toolbar toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.login_toolbar);
 
-        setSupportActionBar(toolbar);
 
 
     }
-
-
-
-
 
 
 }
