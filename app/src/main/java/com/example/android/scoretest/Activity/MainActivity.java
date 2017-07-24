@@ -1,16 +1,15 @@
 package com.example.android.scoretest.Activity;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,6 +24,7 @@ import com.example.android.scoretest.R;
 import com.example.android.scoretest.model.Course;
 import com.example.android.scoretest.utils.JoupUtil;
 import com.example.android.scoretest.utils.OkHttpUtil;
+import com.example.android.scoretest.utils.mUtil;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -39,7 +39,7 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     private String loginScoreUrl;
 
@@ -64,9 +64,135 @@ public class MainActivity extends AppCompatActivity {
     private long exitTime = 0;
 
 
+
     @Override
+    public void widgetClick(View v) {
+
+    }
+
+    @Override
+    public void initParms(Bundle parms) {
+
+    }
+
+    @Override
+    public View bindView() {
+        return null;
+    }
+
+    @Override
+    public int bindLayout() {
+        return R.layout.activity_main;
+    }
+
+    @Override
+    public void initView(View view) {
+
+        android.support.v7.widget.Toolbar toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.main_toolbar);
+
+        setSupportActionBar(toolbar);
+
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.main_drawer_layout);
+
+        ActionBar actionBar = getSupportActionBar();
+
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
+        }
+
+
+        navView = (NavigationView) findViewById(R.id.nav_view);
+
+        View headerLayout = navView.inflateHeaderView(R.layout.main_header);
+
+        stuIDText = (TextView) headerLayout.findViewById(R.id.main_stuID);
+
+        stuNameText = (TextView) headerLayout.findViewById(R.id.main_stuName);
+
+        webView = (WebView) findViewById(R.id.web_view_index_sanjiang);
+
+        webView.setWebViewClient(new WebViewClient());
+
+        webView.getSettings().setJavaScriptEnabled(true);
+
+        webView.loadUrl("http://www.sju.js.cn/");
+
+    }
+
+    @Override
+    public void setListener() {
+
+    }
+
+    @Override
+    public void doBusiness(Context mContext) {
+
+        String stuId = getIntent().getStringExtra("stuId");
+        String stuName = getIntent().getStringExtra("stuName");
+
+        stuIDText.setText(stuId);
+        stuNameText.setText(stuName);
+
+
+        Cookie = getIntent().getStringExtra("cookie");
+        UrlString = getIntent().getStringExtra("urlString");
+        try {
+            loginScoreUrl = "http://218.94.104.201:84/xscj.aspx?xh=" + stuId
+                    + "&xm=" + URLEncoder.encode(stuName, "GB2312") + "&gnmkdm=N121605";
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+
+
+        //loginScore(UrlString);
+        getDate(UrlString);
+
+
+        navView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.nav_score_all:
+
+                        if (courseList.isEmpty()) {
+                            delayProDia();
+                            break;
+                        } else {
+
+                            Intent intent = new Intent(MainActivity.this, CourseActivity.class);
+                            intent.putExtra("list", (Serializable) courseList);
+                            startActivity(intent);
+
+                            break;
+                        }
+                    case R.id.nav_GPT_get:
+
+                        if (courseList.isEmpty()) {
+                            delayProDia();
+                            break;
+                        } else {
+                            float GPA = mUtil.countGPA(courseList);
+                            showToast("平局绩点为："+GPA);
+
+                            break;
+                        }
+                    default:
+                        break;
+                }
+
+                return true;
+            }
+        });
+
+    }
+
+    /*@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
         setContentView(R.layout.activity_main);
 
         initViews();
@@ -163,7 +289,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-    }
+    }*/
 
 
 
@@ -300,7 +426,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void initViews() {
+    /*private void initViews() {
 
         android.support.v7.widget.Toolbar toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.main_toolbar);
 
@@ -312,7 +438,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeAsUpIndicator(R.drawable.ic_done);
+            actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
         }
 
 
@@ -333,7 +459,7 @@ public class MainActivity extends AppCompatActivity {
         webView.loadUrl("http://www.sju.js.cn/");
 
 
-    }
+    }*/
 
 
     @Override
@@ -392,4 +518,6 @@ public class MainActivity extends AppCompatActivity {
         });
         t.start();
     }
+
+
 }

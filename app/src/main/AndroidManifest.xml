@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.android.scoretest">
+    package="com.example.android.scoretest"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
@@ -8,26 +9,24 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <application
+        tools:replace="android:icon,android:theme,android:allowBackup,android:label,android:supportsRtl"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label=""
+        android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity
-            android:name=".Activity.LoginActivity"
-            android:theme="@style/NavigationTransparent"
-            >>
+        <activity android:name=".Activity.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Activity.CourseActivity"
-            android:theme="@style/NavigationTransparent"/>
-        <activity
-            android:name=".Activity.MainActivity"
-           android:theme="@style/MainTheme" />
+        <activity android:name=".Activity.CourseActivity" />
+        <activity android:name=".Activity.MainActivity" />
+
+        <activity android:name=".Activity.BaseActivity"></activity>
     </application>
 
 </manifest>

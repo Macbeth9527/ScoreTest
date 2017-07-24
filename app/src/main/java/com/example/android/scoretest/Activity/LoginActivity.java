@@ -1,17 +1,22 @@
 package com.example.android.scoretest.Activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.RequiresApi;
+import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.scoretest.R;
@@ -26,17 +31,11 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends BaseActivity {
 
     private static final int Login_Failed = 0;
     private static final int Login_Success = 1;
     private static final int Login_Failed_SysBusy = 2;
-
-    private EditText accountEdit;
-
-    private EditText passwordEdit;
-
-    private Button loginButton;
 
     private String VIEWSTATE;
 
@@ -46,7 +45,20 @@ public class LoginActivity extends AppCompatActivity {
 
     private String password;
 
+
     private String loginUrl = "http://218.94.104.201:84/default2.aspx";
+
+    private TextView mBtnLogin;
+
+    private View progress;
+
+    private View mInputLayout;
+
+    private TextInputLayout mAccount, mPassword;
+
+    private String url ;
+
+
 
 
     private Handler handler = new Handler() {
@@ -54,13 +66,13 @@ public class LoginActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case Login_Failed:
-                    Toast.makeText(LoginActivity.this, "登陆失败", Toast.LENGTH_SHORT).show();
+                    showToast("登陆失败");
                     break;
                 case Login_Success:
-                    Toast.makeText(LoginActivity.this, "登陆成功", Toast.LENGTH_SHORT).show();
+                    showToast("登陆成功");
                     break;
                 case Login_Failed_SysBusy:
-                    Toast.makeText(LoginActivity.this, "登陆失败，系统正忙", Toast.LENGTH_SHORT).show();
+                    showToast("登陆失败，系统正忙");
                     break;
 
                 default:
@@ -71,44 +83,81 @@ public class LoginActivity extends AppCompatActivity {
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+    public void widgetClick(View v) {
 
+        switch (v.getId()){
+            case R.id.main_btn_login :
 
-        initView();
+                stuID = mAccount.getEditText().getText().toString();
 
-
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                stuID = accountEdit.getText().toString();
-                if (stuID.isEmpty()) {
-                    accountEdit.setError("学号不能为空");
-                } else if (stuID.length() != 11) {
-                    accountEdit.setError("学号不为11位");
+                if (stuID.equals("")){
+                    mAccount.setError("账号不能为空");
+                    break;
+                }else if (stuID.length()!= 11){
+                    mAccount.setError("账号必须为11位");
+                    break;
                 }
-                password = passwordEdit.getText().toString();
-                if (password.isEmpty()) {
-                    passwordEdit.setError("密码不能为空");
+                password = mPassword.getEditText().getText().toString();
+                if (password.equals("")){
+                    mPassword.setError("账号不能为空");
+                    break;
                 }
 
-                getFuck();
+                getInfo();
 
-            }
-        });
+                break;
+            default:
+                break;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().setStatusBarColor(Color.TRANSPARENT);
-            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
         }
+
+    }
+
+    @Override
+    public void initParms(Bundle parms) {
+
+    }
+
+    @Override
+    public View bindView() {
+        return null;
+    }
+
+    @Override
+    public int bindLayout() {
+        return R.layout.activity_login;
+    }
+
+    @Override
+    public void initView(View view) {
+
+        mBtnLogin = $(R.id.main_btn_login);
+
+        progress = $(R.id.layout_progress);
+
+        mInputLayout = $(R.id.input_layout);
+
+        mAccount = $(R.id.input_layout_account);
+
+        mPassword = $(R.id.input_layout_password);
+
+    }
+
+    @Override
+    public void setListener() {
+
+        mBtnLogin.setOnClickListener(this);
+
+    }
+
+    @Override
+    public void doBusiness(Context mContext) {
 
 
 
     }
 
-
-    private void getFuck() {
+    private void getInfo() {
 
         OkHttpUtil.sendRequestGet(loginUrl, new Callback() {
             @Override
@@ -180,18 +229,9 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    private void initView() {
-
-        accountEdit = (EditText) findViewById(R.id.input_account);
-
-        passwordEdit = (EditText) findViewById(R.id.input_password);
-
-        loginButton = (Button) findViewById(R.id.btn_login);
 
 
 
-
-    }
 
 
 }
