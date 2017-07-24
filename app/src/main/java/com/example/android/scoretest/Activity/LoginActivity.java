@@ -1,8 +1,11 @@
 package com.example.android.scoretest.Activity;
 
+import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
@@ -11,6 +14,7 @@ import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -20,31 +24,29 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.scoretest.R;
+import com.example.android.scoretest.utils.JellyInterpolator;
 import com.example.android.scoretest.utils.JoupUtil;
 import com.example.android.scoretest.utils.OkHttpUtil;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Iterator;
 
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
 public class LoginActivity extends BaseActivity {
 
-    private static final int Login_Failed = 0;
-    private static final int Login_Success = 1;
-    private static final int Login_Failed_SysBusy = 2;
-
-    private String VIEWSTATE;
-
-    private String Cookie;
+    private static final Integer Login_Failed = 0;
+    private static final Integer Login_Success = 1;
+    private static final Integer Login_Failed_SysBusy = 2;
 
     private String stuID;
 
     private String password;
-
 
     private String loginUrl = "http://218.94.104.201:84/default2.aspx";
 
@@ -57,30 +59,6 @@ public class LoginActivity extends BaseActivity {
     private TextInputLayout mAccount, mPassword;
 
     private String url ;
-
-
-
-
-    private Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case Login_Failed:
-                    showToast("登陆失败");
-                    break;
-                case Login_Success:
-                    showToast("登陆成功");
-                    break;
-                case Login_Failed_SysBusy:
-                    showToast("登陆失败，系统正忙");
-                    break;
-
-                default:
-                    break;
-            }
-        }
-    };
-
 
     @Override
     public void widgetClick(View v) {
@@ -103,7 +81,7 @@ public class LoginActivity extends BaseActivity {
                     break;
                 }
 
-                getInfo();
+                new LoginTask().execute();
 
                 break;
             default:
@@ -153,79 +131,126 @@ public class LoginActivity extends BaseActivity {
     @Override
     public void doBusiness(Context mContext) {
 
-
-
     }
 
-    private void getInfo() {
+    private class LoginTask extends AsyncTask<Void,Void,Integer>{
 
-        OkHttpUtil.sendRequestGet(loginUrl, new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
+        private String cookie = null;
+
+        private String responseBody = null;
+
+        @Override
+        protected void onPreExecute() {
+            progress.setVisibility(View.VISIBLE);
+            progressAnimator(progress);
+            mInputLayout.setVisibility(View.INVISIBLE);
+        }
+
+        @Override
+        protected void onPostExecute(Integer result) {
+
+            if ( result == Login_Failed){
+                new SweetAlertDialog(LoginActivity.this, SweetAlertDialog.ERROR_TYPE)
+                        .setTitleText("登陆失败")
+                        .setContentText("可能是账号密码输错了？")
+                        .setConfirmText("重新登陆")
+                        .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                            @Override
+                            public void onClick(SweetAlertDialog sDialog) {
+                                sDialog.dismissWithAnimation();
+                            }
+                        })
+                        .show();
+                progress.setVisibility(View.INVISIBLE);
+                mInputLayout.setVisibility(View.VISIBLE);
+            }
+            if ( result == Login_Failed_SysBusy){
+                new SweetAlertDialog(LoginActivity.this, SweetAlertDialog.ERROR_TYPE)
+                        .setTitleText("登陆失败")
+                        .setContentText("对不起，服务器又大姨妈了")
+                        .setConfirmText("稍后再试")
+                        .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                            @Override
+                            public void onClick(SweetAlertDialog sDialog) {
+                                sDialog.dismissWithAnimation();
+                            }
+                        })
+                        .show();
+
+                progress.setVisibility(View.INVISIBLE);
+                mInputLayout.setVisibility(View.VISIBLE);
+            }
+            if ( result == Login_Success){
+
+                final Bundle bundle = new Bundle();
+
+                bundle.putString("urlString",url);
+                bundle.putString("cookie",cookie);
+                bundle.putString("stuId",stuID);
+                bundle.putString("stuName",JoupUtil.getStuName(responseBody));
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Thread.sleep(1500);
+                            startActivity(MainActivity.class, bundle);
+                            finish();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+
 
             }
 
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-
-                Cookie = OkHttpUtil.getCookieByHand(response);
-
-                VIEWSTATE = JoupUtil.getVIEWSTATE(response.body().string());
-
-                login();
-
-            }
-        });
+        }
 
 
-    }
+        @Override
+        protected Integer doInBackground(Void... params) {
 
+            Response response = OkHttpUtil.loginRequest(loginUrl,stuID,password);
 
-    private void login() throws UnsupportedEncodingException {
+            cookie = OkHttpUtil.getCookie(response);
 
-        final Message message = new Message();
+            if (response.isRedirect()){
 
-        //发送post请求
-        OkHttpUtil.sendRequestPost(loginUrl, VIEWSTATE, stuID, password, Cookie, new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
+                url = "http://218.94.104.201:84" + response.header("Location");
 
-            }
+                if (url.equals("http://218.94.104.201:84/zdy.htm?aspxerrorpath=/default2.aspx")){
 
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
+                    return Login_Failed_SysBusy;
 
-                String urlString = response.request().url().toString();
-                final String body = response.body().string();
+                }else {
 
-                if (urlString.equals(loginUrl)) {
+                    responseBody = OkHttpUtil.loginGet( url , cookie );
 
-                    message.what = Login_Failed;
-
-                    handler.sendMessage(message);
-
-                } else if (urlString.equals("http://218.94.104.201:84/zdy.htm?aspxerrorpath=/default2.aspx")) {
-                    message.what = Login_Failed_SysBusy;
-                    handler.sendMessage(message);
-                } else {
-
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                    intent.putExtra("urlString", urlString);
-                    intent.putExtra("cookie", Cookie);
-                    intent.putExtra("stuId", stuID);
-                    intent.putExtra("stuName", JoupUtil.getStuName(body));
-
-                    message.what = Login_Success;
-                    handler.sendMessage(message);
-
-                    startActivity(intent);
-                    finish();
-
+                    return Login_Success;
                 }
 
             }
-        });
 
+            return Login_Failed;
+        }
+    }
+
+    private void progressAnimator(final View view) {
+        PropertyValuesHolder animator = PropertyValuesHolder.ofFloat("scaleX",
+                0.5f, 1f);
+
+        PropertyValuesHolder animator2 = PropertyValuesHolder.ofFloat("scaleY",
+                0.5f, 1f);
+
+        ObjectAnimator animator3 = ObjectAnimator.ofPropertyValuesHolder(view,
+                animator, animator2);
+
+        animator3.setDuration(2000);
+
+        animator3.setInterpolator(new JellyInterpolator());
+
+        animator3.start();
 
     }
 
