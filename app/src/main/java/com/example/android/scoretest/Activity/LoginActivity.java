@@ -3,39 +3,25 @@ package com.example.android.scoretest.Activity;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.content.Context;
-import android.content.Intent;
-import android.graphics.Color;
+
 import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Handler;
-import android.os.Message;
-import android.support.annotation.RequiresApi;
+
 import android.support.design.widget.TextInputLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import android.util.Log;
+
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.EditText;
+
 import android.widget.TextView;
-import android.widget.Toast;
+
 
 import com.example.android.scoretest.R;
 import com.example.android.scoretest.utils.JellyInterpolator;
 import com.example.android.scoretest.utils.JoupUtil;
 import com.example.android.scoretest.utils.OkHttpUtil;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.Iterator;
-
-
 import cn.pedant.SweetAlert.SweetAlertDialog;
-import okhttp3.Call;
-import okhttp3.Callback;
+
 import okhttp3.Response;
 
 public class LoginActivity extends BaseActivity {
@@ -58,25 +44,25 @@ public class LoginActivity extends BaseActivity {
 
     private TextInputLayout mAccount, mPassword;
 
-    private String url ;
+    private String url;
 
     @Override
     public void widgetClick(View v) {
 
-        switch (v.getId()){
-            case R.id.main_btn_login :
+        switch (v.getId()) {
+            case R.id.main_btn_login:
 
                 stuID = mAccount.getEditText().getText().toString();
 
-                if (stuID.equals("")){
+                if (stuID.equals("")) {
                     mAccount.setError("账号不能为空");
                     break;
-                }else if (stuID.length()!= 11){
+                } else if (stuID.length() != 11) {
                     mAccount.setError("账号必须为11位");
                     break;
                 }
                 password = mPassword.getEditText().getText().toString();
-                if (password.equals("")){
+                if (password.equals("")) {
                     mPassword.setError("账号不能为空");
                     break;
                 }
@@ -133,7 +119,7 @@ public class LoginActivity extends BaseActivity {
 
     }
 
-    private class LoginTask extends AsyncTask<Void,Void,Integer>{
+    private class LoginTask extends AsyncTask<Void, Void, Integer> {
 
         private String cookie = null;
 
@@ -149,8 +135,10 @@ public class LoginActivity extends BaseActivity {
         @Override
         protected void onPostExecute(Integer result) {
 
-            if ( result == Login_Failed){
-                new SweetAlertDialog(LoginActivity.this, SweetAlertDialog.ERROR_TYPE)
+            SweetAlertDialog loginErrorDialog = new SweetAlertDialog(LoginActivity.this, SweetAlertDialog.ERROR_TYPE);
+
+            if (result == Login_Failed) {
+                loginErrorDialog
                         .setTitleText("登陆失败")
                         .setContentText("可能是账号密码输错了？")
                         .setConfirmText("重新登陆")
@@ -164,8 +152,8 @@ public class LoginActivity extends BaseActivity {
                 progress.setVisibility(View.INVISIBLE);
                 mInputLayout.setVisibility(View.VISIBLE);
             }
-            if ( result == Login_Failed_SysBusy){
-                new SweetAlertDialog(LoginActivity.this, SweetAlertDialog.ERROR_TYPE)
+            if (result == Login_Failed_SysBusy) {
+                loginErrorDialog
                         .setTitleText("登陆失败")
                         .setContentText("对不起，服务器又大姨妈了")
                         .setConfirmText("稍后再试")
@@ -180,20 +168,20 @@ public class LoginActivity extends BaseActivity {
                 progress.setVisibility(View.INVISIBLE);
                 mInputLayout.setVisibility(View.VISIBLE);
             }
-            if ( result == Login_Success){
+            if (result == Login_Success) {
 
                 final Bundle bundle = new Bundle();
 
-                bundle.putString("urlString",url);
-                bundle.putString("cookie",cookie);
-                bundle.putString("stuId",stuID);
-                bundle.putString("stuName",JoupUtil.getStuName(responseBody));
+                bundle.putString("urlString", url);
+                bundle.putString("cookie", cookie);
+                bundle.putString("stuId", stuID);
+                bundle.putString("stuName", JoupUtil.getStuName(responseBody));
 
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            Thread.sleep(1500);
+                            Thread.sleep(500);
                             startActivity(MainActivity.class, bundle);
                             finish();
                         } catch (InterruptedException e) {
@@ -211,21 +199,21 @@ public class LoginActivity extends BaseActivity {
         @Override
         protected Integer doInBackground(Void... params) {
 
-            Response response = OkHttpUtil.loginRequest(loginUrl,stuID,password);
+            Response response = OkHttpUtil.loginRequest(loginUrl, stuID, password);
 
             cookie = OkHttpUtil.getCookie(response);
 
-            if (response.isRedirect()){
+            if (response.isRedirect()) {
 
                 url = "http://218.94.104.201:84" + response.header("Location");
 
-                if (url.equals("http://218.94.104.201:84/zdy.htm?aspxerrorpath=/default2.aspx")){
+                if (url.equals("http://218.94.104.201:84/zdy.htm?aspxerrorpath=/default2.aspx")) {
 
                     return Login_Failed_SysBusy;
 
-                }else {
+                } else {
 
-                    responseBody = OkHttpUtil.loginGet( url , cookie );
+                    responseBody = OkHttpUtil.loginGet(url, cookie);
 
                     return Login_Success;
                 }
@@ -253,10 +241,5 @@ public class LoginActivity extends BaseActivity {
         animator3.start();
 
     }
-
-
-
-
-
 
 }

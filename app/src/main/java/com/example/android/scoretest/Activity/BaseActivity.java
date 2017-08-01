@@ -3,27 +3,20 @@ package com.example.android.scoretest.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.graphics.Color;
-import android.os.Build;
-import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Toast;
-
-import com.example.android.scoretest.R;
-import com.readystatesoftware.systembartint.SystemBarTintManager;
 
 public abstract class BaseActivity extends AppCompatActivity implements View.OnClickListener{
 
 
         /** 是否沉浸状态栏 **/
-        private boolean isSetStatusBar = true;
-        /** 是否允许全屏 **/
+        private boolean isSetStatusBar = false;
+        /** 是否去掉导航栏 **/
         private boolean mAllowFullScreen = true;
         /** 是否禁止旋转屏幕 **/
         private boolean isAllowScreenRoate = false;
@@ -49,16 +42,21 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
                 mContextView = mView;
             if (mAllowFullScreen) {
                 requestWindowFeature(Window.FEATURE_NO_TITLE);
+//                supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
             }
             if (isSetStatusBar) {
                 steepStatusBar();
             }
             setContentView(mContextView);
+
             if (!isAllowScreenRoate) {
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
             }
+
             initView(mContextView);
+
             setListener();
+
             doBusiness(this);
         }
 
@@ -67,59 +65,6 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
          */
 
         private void steepStatusBar() {
-
-            Window window = getWindow();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                // Translucent status bar
-                window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP){
-                    // 解决4.4-5.0版本之间，页面包含EditText无法适配的问题
-                    {
-                        // create our manager instance after the content view is set
-                        SystemBarTintManager mTintManager = new SystemBarTintManager(this);
-
-                        // enable status bar tint
-                        mTintManager.setStatusBarTintEnabled(true);
-                        // enable navigation bar tint
-                        mTintManager.setNavigationBarTintEnabled(true);
-
-                        // 自定义状态栏的颜色
-                        mTintManager.setStatusBarTintColor(getResources().getColor(R.color.colorPrimary));
-                    }
-                }
-            }
-
-            // 解决4.4-5.0版本之间，页面包含EditText无法适配的问题
-       /* {
-            // create our manager instance after the content view is set
-            SystemBarTintManager mTintManager = new SystemBarTintManager(this);
-
-            // enable status bar tint
-            mTintManager.setStatusBarTintEnabled(true);
-            // enable navigation bar tint
-            mTintManager.setNavigationBarTintEnabled(true);
-
-            // 自定义状态栏的颜色
-            mTintManager.setStatusBarTintColor(getResources().getColor(R.color.colorPrimary));
-        }*/
-
-            // 解决[5.0-5.1.1]版本状态栏没有全透明的系统适配问题
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                // 解决部分5.x系统使用状态栏透明属性后状态栏变黑色，不使用这句代码，在6.0设备上又出现半透明状态栏
-                // 需要特殊处理
-                window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-
-                window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
-                window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-                window.setStatusBarColor(Color.TRANSPARENT);
-            }
-
-            // 把状态栏标记为浅色，然后状态栏的字体颜色自动转换为深色。
-            /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                 getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-             }*/
 
 
         }

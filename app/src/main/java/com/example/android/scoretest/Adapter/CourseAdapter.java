@@ -1,13 +1,9 @@
 package com.example.android.scoretest.Adapter;
 
-import android.content.Context;
-
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import android.widget.TextView;
 
 import com.example.android.scoretest.R;
@@ -16,53 +12,51 @@ import com.example.android.scoretest.model.Course;
 import java.util.List;
 
 /**
- * Created by ALIENWARE on 2017/6/7.
+ * Created by ALIENWARE on 2017/7/28.
  */
 
 public class CourseAdapter extends RecyclerView.Adapter<CourseAdapter.ViewHolder> {
 
-    private Context mcontext;
-
-    private List<Course> mCourseLists;
+    private List<Course> mcourseVOlist;
 
     static class ViewHolder extends RecyclerView.ViewHolder{
-        CardView cardView;
+
         TextView courseID;
+
         TextView courseName;
-        TextView scoreTest;
-        TextView scoreFinal;
-        TextView scoreSec;
-        TextView criditNo;
 
+        public ViewHolder(View itemView) {
+            super(itemView);
+            courseID = (TextView)itemView.findViewById(R.id.main_coureID_vo);
 
+            courseName = (TextView)itemView.findViewById(R.id.main_coureName_vo);
 
-        public ViewHolder(View view) {
-            super(view);
-            cardView = (CardView) view;
-            courseID = (TextView)view.findViewById(R.id.course_id);
-            courseName = (TextView)view.findViewById(R.id.course_name);
-            scoreTest = (TextView)view.findViewById(R.id.score_test);
-            scoreFinal = (TextView)view.findViewById(R.id.score_final);
-            scoreSec = (TextView)view.findViewById(R.id.score_sec);
-            criditNo = (TextView)view.findViewById(R.id.cridit_no);
         }
     }
 
-    public CourseAdapter(List<Course> courseLists) {
-        mCourseLists = courseLists;
+    public CourseAdapter(List<Course> list){
+        mcourseVOlist = list;
     }
 
     @Override
-    public CourseAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        if (mcontext == null){
-            mcontext = parent.getContext();
-        }
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
-        View view = LayoutInflater.from(mcontext).inflate(R.layout.course_item,parent,false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.course_item,parent,false);
 
-        final ViewHolder holder = new ViewHolder(view);
+        ViewHolder holder = new ViewHolder(view);
+        return holder;
+    }
 
-       /* holder.cardView.setOnClickListener(new View.OnClickListener() {
+    @Override
+    public void onBindViewHolder(ViewHolder holder, int position) {
+
+        Course courseVO = mcourseVOlist.get(position);
+
+        holder.courseID.setText(courseVO.getcID());
+        holder.courseName.setText(courseVO.getcName());
+
+               /* holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 int position = holder.getAdapterPosition();
@@ -77,23 +71,11 @@ public class CourseAdapter extends RecyclerView.Adapter<CourseAdapter.ViewHolder
         */
 
 
-        return holder;
-    }
-
-    @Override
-    public void onBindViewHolder(CourseAdapter.ViewHolder holder, int position) {
-        Course course = mCourseLists.get(position);
-        holder.courseID.setText(course.getcID());
-        holder.courseName.setText(course.getcName());
-        holder.scoreTest.setText(course.getTestScore());
-        holder.scoreFinal.setText(course.getFinScore());
-        holder.scoreSec.setText(course.getSecScore());
-        holder.criditNo.setText(course.getCredit());
 
     }
 
     @Override
     public int getItemCount() {
-        return mCourseLists.size();
+        return mcourseVOlist.size();
     }
 }

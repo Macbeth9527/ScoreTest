@@ -10,7 +10,7 @@
 
         <item
             android:icon="@drawable/ic_delete"
-            android:id="@+id/nav_GPT_get"
+            android:id="@+id/nav_GPA_get"
             android:title="绩点查询"
             />
     </group>

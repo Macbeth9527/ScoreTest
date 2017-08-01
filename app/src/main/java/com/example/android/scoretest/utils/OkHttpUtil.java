@@ -1,6 +1,11 @@
 package com.example.android.scoretest.utils;
 
+import com.example.android.scoretest.model.Course;
+
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.FormBody;
@@ -18,7 +23,7 @@ public class OkHttpUtil {
     static  OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
             .followRedirects(false)
             .followSslRedirects(false)
-            //禁制OkHttp的重定向操作，我们自己处理重定向
+            //禁止OkHttp的重定向操作，我们自己处理重定向
             // .cookieJar(mCookieJar)为OkHttp设置自动携带Cookie的功能
             .build();
 
@@ -88,24 +93,12 @@ public class OkHttpUtil {
 
     }
 
-    public static String getCookieByHand(Response response){
-        String cookie;
-        cookie = response.headers("Set-Cookie").toString();
-        String a[] = cookie.split(";");
-        cookie = a[0];
-        cookie = cookie.substring(1);
 
-        return cookie;
-    }
 
-    public static void sendRequestGet(String address , okhttp3.Callback callback){
-        OkHttpClient okHttpClient = new OkHttpClient();
-        Request request = new Request.Builder().url(address).build();
-        okHttpClient.newCall(request).enqueue(callback);
-    }
+    public static String doGetVIEWSTATE(String address , String Cookie , String Referer ){
 
-    public static void sendRequestGet(String address , String Cookie , String Referer , okhttp3.Callback callback){
-        OkHttpClient okHttpClient = new OkHttpClient();
+        String VIEWSTATE = "";
+
         Request request = new Request.Builder()
                 .url(address)
                 .addHeader("Referer", Referer)
@@ -113,38 +106,25 @@ public class OkHttpUtil {
                 .addHeader("Cookie", Cookie)
                 .build();
 
-        okHttpClient.newCall(request).enqueue(callback);
+        try {
+            Response response = okHttpClient.newCall(request).execute();
+            String htmlBody = response.body().string();
+            VIEWSTATE = JoupUtil.getVIEWSTATE(htmlBody);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return  VIEWSTATE;
+
+
     }
 
 
+    public static List<Course> getScore(String address , String Referer, String Cookie, String VIEWSTATE){
 
+        List<Course> courseList = new ArrayList();
 
-    public static void sendRequestPost(String address , String VIEWSTATE, String stuID, String password,String Cookie, okhttp3.Callback callback){
-        OkHttpClient okHttpClient = new OkHttpClient();
-        //构建表单数据
-        FormBody.Builder builder = new  FormBody.Builder();
-        builder.add("__VIEWSTATE", VIEWSTATE);
-        builder.add("txtUserName",stuID);
-        builder.add("TextBox2", password);
-        builder.add("txtSecretCode", "");
-        builder.add("RadioButtonList1", "学生");
-        builder.add("Button1", "");
-        builder.add("lbLanguage", "");
-        builder.add("hidPdrs", "");
-        builder.add("hidsc", "");
-        RequestBody requestBody = builder.build();
-
-        Request request = new Request.Builder()
-                .url(address)
-                .post(requestBody)
-                .addHeader("Cookie", Cookie)
-                .build();
-        okHttpClient.newCall(request).enqueue(callback);
-    }
-
-    public static void sendRequestPost(String address ,String Referer, String Cookie, String VIEWSTATE , okhttp3.Callback callback){
-        OkHttpClient okHttpClient = new OkHttpClient();
-        //构建表单数据
         FormBody.Builder builder = new  FormBody.Builder();
         RequestBody requestBody = builder
                 .add("__VIEWSTATE",VIEWSTATE)
@@ -161,8 +141,34 @@ public class OkHttpUtil {
                 .addHeader("Cookie", Cookie)
                 .post(requestBody)
                 .build();
-        okHttpClient.newCall(request).enqueue(callback);
+
+        try {
+            Response response = okHttpClient.newCall(request).execute();
+            if (response.isSuccessful()) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(response.body().byteStream(), "gb2312"));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+                courseList = JoupUtil.parseHtml(sb.toString());
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        return courseList;
+
+
     }
+
+
+
+
+
+
 
 
 }

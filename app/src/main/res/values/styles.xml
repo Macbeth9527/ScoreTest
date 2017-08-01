@@ -7,7 +7,19 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
 
+
     </style>
+
+    <style name="BaseThem" parent="AppTheme">
+        <item name="colorPrimaryDark">#3fbfff</item>
+        <item name="colorPrimary">#3fbfff</item>
+    </style>
+
+    <style name="TranslucentThem" parent="BaseThem">
+
+    </style>
+
+
 
 
 

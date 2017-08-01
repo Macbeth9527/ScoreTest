@@ -9,6 +9,7 @@ import java.util.List;
  */
 
 public class mUtil {
+
     public static Float countGPA(List<Course> courseList){
 
         float credit = 0.0f ;
@@ -41,7 +42,7 @@ public class mUtil {
             GPA_final = 0;
 
         }else {
-            GPA_final = ( GPA_final/credit - 50 ) * 0.1f ;
+            GPA_final = ( GP_all / credit - 50 ) * 0.1f ;
             GPA_final = (float)(Math.round(GPA_final*100))/100;
         }
 
